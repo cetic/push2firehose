@@ -1,4 +1,4 @@
-# Push To Firehose
+# Push2Firehose
 
 ## Script purpose
 
@@ -20,7 +20,7 @@ file according to the [boto3 documentation](http://boto3.readthedocs.io/en/lates
 This script use option to determine what you want to push and where to push it. If you want a reminder of all the availaible option run the following command :
 
 ```sh
-python3 pushtofirehose.py --help
+python3 push2firehose.py --help
 ```
 
 options are the folowing :
@@ -35,11 +35,11 @@ options are the folowing :
 So the basic command syntax is :
 
 ```sh
-python3 pushtofirehose.py --region <region> --name <name> --string <data>
+python3 push2firehose.py --region <region> --name <name> --string <data>
 ```
 
 or
 
 ```sh
-python3 pushtofirehose.py --region <region> --name <name> --json <path to json file>
+python3 push2firehose.py --region <region> --name <name> --json <path to json file>
 ```

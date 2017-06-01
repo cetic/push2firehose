@@ -29,8 +29,9 @@ options are the folowing :
 * `--name` [REQUIRED] : Name of your firehose stream.
 * `--string` : The string you want to push to your firehose stream.
 * `--json` : The path to the json file you want to push to your firehose stream.
+* `--csv` : The path to the csv file you want to push to your firehose stream.
 
-> You must use `--string` or `--json` but never both in the same command.
+> You must use `--string`, `--json` or `--csv` but never more than one in the same command.
 
 So the basic command syntax is :
 
@@ -43,3 +44,23 @@ or
 ```sh
 python3 push2firehose.py --region <region> --name <name> --json <path to json file>
 ```
+
+or
+
+```sh
+python3 push2firehose.py --region <region> --name <name> --csv <path to csv file>
+```
+
+The script can be tried with one of the sample file :
+
+```sh
+python3 push2firehose.py --region <region> --name <name> --json sample.json
+```
+
+or
+
+```sh
+python3 push2firehose.py --region <region> --name <name> --csv sample.csv
+```
+
+> *WARNING* : the csv file is more than 30000 row long. If you want a shorter file just copy few line in a new csv.

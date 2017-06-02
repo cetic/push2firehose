@@ -4,83 +4,66 @@ import uuid
 import argparse
 import csv
 
-#Define argument used for firehose
+def SendData(stream, client, data_binary_string):
+
+    response = client.put_record(
+        DeliveryStreamName=stream,
+        Record={'Data': data_binary_string}
+    )
+
+    if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
+        print("SUCCESS, your request ID is : " + response["ResponseMetadata"]["RequestId"])
+
+    else:
+        print("ERROR : something went wrong")
+        exit(1)
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--string", help="String to push")
 parser.add_argument("--region", help="Firehose region")
 parser.add_argument("--name", help="Steam name")
-parser.add_argument("--json", help="Path to a djson file")
-parser.add_argument("--csv", help="Path to a csv file")
+parser.add_argument("--file", help="Path to a file")
 args = parser.parse_args()
 
-#Test if arg are set corectly
-if args.region and args.name and (args.string or args.json or args.csv):
+if(args.region and args.name and (args.string or args.file)):
+
+    if(args.string and args.file):
+        print("ERROR : too many argument")
+        exit(1)
 
     client = boto3.client('firehose', region_name=args.region)
     stream = args.name.format(uuid.uuid4())
 
-    if(args.string and not args.json and not args.csv):
+    if(args.string):
         data_binary_string = str.encode(args.string)
+        SendData(stream, client, data_binary_string)
+        exit(0)
+    else:
+        if(args.file.lower().endswith('.json')):
+            with open(args.file) as json_data:
+                data = json.load(json_data)
+                data_string = str(data)
+                data_binary_string = str.encode(data_string)
+                SendData(stream, client, data_binary_string)
+                exit(0)
 
-        response = client.put_record(
-            DeliveryStreamName=stream,
-            Record={'Data': data_binary_string}
-        )
+        elif(args.file.lower().endswith('.csv')):
 
-        if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
-            print("SUCCESS, your request ID is : " + response["ResponseMetadata"]["RequestId"])
+            with open(args.file, 'rt') as f:
+                reader = csv.reader(f)
+
+                for row in reader:
+                    data = row
+                    data_string = str(data)
+                    data_binary_string = str.encode(data_string)
+                    SendData(stream, client, data_binary_string)
+
             exit(0)
 
         else:
-            print("ERROR : something went wrong")
-            exit(1)
+            print("ERROR : this file si not suported yet, please use csv or json file.")
 
-    elif(args.json and not args.string and not args.csv):
-        with open(args.json) as json_data:
-            data = json.load(json_data)
-            data_string = str(data)
-            data_binary_string = str.encode(data_string)
+else:
 
-            response = client.put_record(
-                DeliveryStreamName=stream,
-                Record={'Data': data_binary_string}
-            )
-
-            if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
-                print("SUCCESS, your request ID is : " + response["ResponseMetadata"]["RequestId"])
-                exit(0)
-
-            else:
-                print("ERROR : something went wrong")
-                exit(1)
-
-    elif(args.csv and not args.string and not args.json):
-        with open(args.csv, 'rt') as f:
-            reader = csv.reader(f)
-
-            for row in reader:
-                data = row
-                data_string = str(data)
-                data_binary_string = str.encode(data_string)
-
-                response = client.put_record(
-                    DeliveryStreamName=stream,
-                    Record={'Data': data_binary_string}
-                )
-
-                if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
-                    print("SUCCESS, your request ID is : " + response["ResponseMetadata"]["RequestId"])
-
-
-                else:
-                    print("ERROR : something went wrong")
-
-            exit(0)
-
-    else:
-        print("ERROR : Specify a String OR the path of a Djson File, not both")
-        exit(1)
-
-else :
     print("ERROR : Some argument are missing ! Use -h or --help to see the argument's list")
     exit(1)
